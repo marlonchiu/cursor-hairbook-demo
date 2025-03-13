@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Barber {
+  id          String    @id @default(uuid())
+  name        String
+  title       String?
+  description String?
+  imageUrl    String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+}
+
+model Service {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  duration    Int
+  imageUrl    String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+}
+
+model Booking {
+  id         String        @id @default(uuid())
+  name       String
+  email      String
+  phone      String
+  date       DateTime
+  timeSlotId String
+  notes      String?
+  status     BookingStatus @default(PENDING)
+  serviceId  String
+  barberId   String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  barber     Barber        @relation(fields: [barberId], references: [id])
+  service    Service       @relation(fields: [serviceId], references: [id])
+
+  @@index([date, barberId])
+  @@index([date, status])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
